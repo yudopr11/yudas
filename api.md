@@ -169,7 +169,7 @@ Delete a user by ID (superuser only).
 ```json
 {
   "message": "User has been deleted successfully",
-  "deleted_user": {
+  "deleted_item": {
     "id": 0,
     "username": "string",
     "uuid": "string"
@@ -238,51 +238,30 @@ Create a new blog post.
 
 ### Get Posts
 
-Get a list of blog posts with various filtering options and pagination metadata.
+Get all published blog posts. Supports pagination and filtering.
 
-**URL**: `/blog`  
-**Method**: `GET`  
-**Auth required**: No  
-**Status Code**: `200 OK`
+**Query Parameters:**
 
-**Query Parameters**:
-- `skip` (integer, optional) - Number of items to skip (default: 0)
-- `limit` (integer, optional) - Maximum number of items to return (default: 3)
-- `search` (string, optional) - Search term for filtering posts
-- `tag` (string, optional) - Filter posts by specific tag
-- `published_status` (string, optional) - Filter by published status: 'published' (default), 'unpublished', or 'all'
+| Parameter | Type | Description |
+| --------- | ---- | ----------- |
+| `page` | integer | Page number (default: 1) |
+| `limit` | integer | Number of posts per page (default: 10, max: 100) |
+| `search` | string | Search query to filter posts by title or content |
+| `use_rag` | boolean | When true and search is provided, uses vector search with OpenAI embeddings instead of keyword search |
+| `tags` | array | Filter posts by tags |
+| `published` | boolean | Filter by publication status (requires authentication) |
 
-**Success Response**: `200 OK`
-```json
-{
-  "items": [
-    {
-      "id": 0,
-      "uuid": "string",
-      "title": "string",
-      "slug": "string",
-      "excerpt": "string",
-      "tags": ["string"],
-      "reading_time": 0,
-      "published": true,
-      "created_at": "2023-01-01T00:00:00.000Z",
-      "author": {
-        "id": 0,
-        "username": "string"
-      }
-    }
-  ],
-  "total_count": 42,
-  "has_more": true,
-  "limit": 3,
-  "skip": 0
-}
+**Note:**
+- When `search` is provided and `use_rag=true`, the API uses OpenAI embeddings for semantic search, which ranks results by relevance rather than keyword matching
+- Semantic search is optimized with tiktoken tokenization for better results with short queries
+- Vector search performs query expansion for very short queries to improve relevance
+- The `published` filter is only available to authenticated users. For non-authenticated users, only published posts are returned.
+
+**Success Response:**
+
 ```
-
-**Notes**:
-- `total_count` represents the total number of posts matching your query (without pagination)
-- `has_more` indicates whether there are more posts after the current page
-- `limit` and `skip` echo back the pagination parameters you provided
+Status: 200 OK
+```
 
 **Error Responses**:
 - `422 Unprocessable Entity` - Invalid query parameters
@@ -340,11 +319,16 @@ Update a blog post by ID (author or superuser only).
 {
   "title": "string",
   "content": "string",
-  "excerpt": "string",
+  "excerpt": "string (optional)",
   "tags": ["string"],
   "published": true
 }
 ```
+
+**Notes**:
+- If `excerpt` is not provided or empty, it will be automatically regenerated using AI
+- Slug is automatically updated if title changes
+- Reading time is recalculated if content changes
 
 **Success Response**: `200 OK`
 ```json

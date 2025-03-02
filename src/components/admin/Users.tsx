@@ -86,7 +86,7 @@ const Users: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="w-full h-full">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Users</h1>
@@ -187,7 +187,7 @@ const Users: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="btn-secondary"
+                className="btn-secondary px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>

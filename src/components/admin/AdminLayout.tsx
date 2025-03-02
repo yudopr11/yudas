@@ -157,8 +157,8 @@ const AdminLayout: React.FC = () => {
         </header>
         
         {/* Main content with scrolling */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 bg-opacity-90">
-          <div className="max-w-7xl mx-auto">
+        <main className="flex-1 overflow-y-auto p-2 bg-opacity-90">
+          <div className="w-full">
             <Outlet />
           </div>
         </main>

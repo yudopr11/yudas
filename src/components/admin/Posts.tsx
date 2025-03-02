@@ -4,7 +4,6 @@ import toast from 'react-hot-toast';
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
 import rehypeKatex from 'rehype-katex';
-// import rehypeSlug from 'rehype-slug';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import { MarkdownRenderers } from '../blog/MarkdownRenderers';
@@ -53,7 +52,7 @@ const PostPreviewContent: React.FC<{ content: string; isPublished?: boolean }> =
   
   // For both published and unpublished posts, show the content preview if available
   return (
-    <div className="prose prose-invert prose-lg max-w-none">
+    <div className="prose prose-invert prose-lg max-w-none overflow-visible">
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeRaw, rehypeKatex]}
@@ -70,7 +69,6 @@ const Posts: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Pagination state
@@ -146,7 +144,6 @@ const Posts: React.FC = () => {
     setTags([]);
     setTagInput('');
     setShowForm(true);
-    setShowPreview(false);
   };
 
   const handleEdit = async (post: PostList) => {
@@ -164,7 +161,6 @@ const Posts: React.FC = () => {
       setTagInput('');
       setPublished(fullPost.published ?? post.published);
       setShowForm(true);
-      setShowPreview(false);
       
       // Show warning if content is empty (regardless of publication status)
       if (!fullPost.content) {
@@ -243,10 +239,6 @@ const Posts: React.FC = () => {
     }
   };
 
-  const togglePreview = () => {
-    setShowPreview(!showPreview);
-  };
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -321,7 +313,7 @@ const Posts: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="w-full h-full">
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Blog Posts</h1>
@@ -405,138 +397,306 @@ const Posts: React.FC = () => {
         </div>
       )}
 
-      {/* Form */}
+      {/* Post Form */}
       {showForm && (
-        <div className="card bg-gray-800 p-6 rounded-xl shadow-lg mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold text-primary-400">
-              {editingPost ? 'Edit Post' : 'Create New Post'}
-            </h2>
-            <button
-              onClick={() => setShowForm(false)}
-              className="text-gray-400 hover:text-white"
-            >
-              ← Back to Posts
-            </button>
-          </div>
+        <div className="bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h2 className="text-2xl font-bold text-white mb-6">
+            {editingPost ? 'Edit Post' : 'Create New Post'}
+          </h2>
           
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-400 mb-1">
-                Title
-              </label>
-              <input
-                id="title"
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="input-field text-white bg-gray-700 w-full"
-                placeholder="Post title"
-                required
-              />
-            </div>
-            
-            <div>
-              <label htmlFor="slug" className="block text-sm font-medium text-gray-400 mb-1">
-                Slug (optional)
-              </label>
-              <input
-                id="slug"
-                type="text"
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                className="input-field text-white bg-gray-700 w-full"
-                placeholder="post-url-slug (will be generated from title if empty)"
-              />
-            </div>
+          <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-6">
+            {/* Left Column - Form (wider) */}
+            <div className="lg:w-3/5 overflow-y-auto h-[calc(100vh-16.8rem)]">
+              <form onSubmit={handleSubmit} className="flex flex-col h-full">
+                <div className="space-y-6 flex-1">
+                  <div className="p-0.5">
+                    <label htmlFor="title" className="block text-sm font-medium text-gray-400 mb-1">
+                      Title
+                    </label>
+                    <input
+                      id="title"
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      className="input-field text-white bg-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                      placeholder="Post title"
+                      required
+                    />
+                  </div>
 
-            <div>
-              <label htmlFor="excerpt" className="block text-sm font-medium text-gray-400 mb-1">
-                Excerpt
-              </label>
-              <textarea
-                id="excerpt"
-                value={excerpt}
-                onChange={(e) => setExcerpt(e.target.value)}
-                className="input-field text-white bg-gray-700 w-full"
-                placeholder="Short summary of the post (will be generated automatically if empty)"
-                rows={3}
-              />
-            </div>
+                  <div className="p-0.5">
+                    <label htmlFor="slug" className="block text-sm font-medium text-gray-400 mb-1">
+                      Slug (URL identifier)
+                    </label>
+                    <input
+                      id="slug"
+                      type="text"
+                      value={slug}
+                      onChange={(e) => setSlug(e.target.value)}
+                      className="input-field text-white bg-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                      placeholder="post-url-identifier (leave empty to generate from title)"
+                    />
+                  </div>
 
-            <div>
-              <label htmlFor="tags" className="block text-sm font-medium text-gray-400 mb-1">
-                Tags (optional)
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="tags"
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && tagInput.trim()) {
-                      e.preventDefault();
-                      if (!tags.includes(tagInput.trim())) {
-                        setTags([...tags, tagInput.trim()]);
-                      }
-                      setTagInput('');
-                    }
-                  }}
-                  className="input-field text-white bg-gray-700 flex-1"
-                  placeholder="Add a tag and press Enter"
-                />
-                <button
-                  type="button"
-                  onClick={() => {
-                    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-                      setTags([...tags, tagInput.trim()]);
-                      setTagInput('');
-                    }
-                  }}
-                  className="btn-primary px-4 flex items-center justify-center font-medium transition-colors"
-                >
-                  Add
-                </button>
-              </div>
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {tags.map((tag, index) => (
-                    <div key={index} className="bg-gray-700 text-gray-300 px-2 py-1 rounded-md flex items-center">
-                      {tag}
+                  <div className="p-0.5">
+                    <label htmlFor="excerpt" className="block text-sm font-medium text-gray-400 mb-1">
+                      Excerpt
+                    </label>
+                    <textarea
+                      id="excerpt"
+                      value={excerpt}
+                      onChange={(e) => setExcerpt(e.target.value)}
+                      className="input-field text-white bg-gray-700 w-full focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                      placeholder="Short summary of the post (will be generated automatically if empty)"
+                      rows={3}
+                    />
+                  </div>
+
+                  <div className="p-0.5">
+                    <label htmlFor="tags" className="block text-sm font-medium text-gray-400 mb-1">
+                      Tags (optional)
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        id="tags"
+                        type="text"
+                        value={tagInput}
+                        onChange={(e) => setTagInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && tagInput.trim()) {
+                            e.preventDefault();
+                            if (!tags.includes(tagInput.trim())) {
+                              setTags([...tags, tagInput.trim()]);
+                            }
+                            setTagInput('');
+                          }
+                        }}
+                        className="input-field text-white bg-gray-700 flex-1 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                        placeholder="Add a tag and press Enter"
+                      />
                       <button
                         type="button"
-                        onClick={() => setTags(tags.filter((_, i) => i !== index))}
-                        className="ml-2 text-gray-400 hover:text-gray-200"
+                        onClick={() => {
+                          if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+                            setTags([...tags, tagInput.trim()]);
+                            setTagInput('');
+                          }
+                        }}
+                        className="btn-primary px-4 flex items-center justify-center font-medium transition-colors"
                       >
-                        &times;
+                        Add
                       </button>
                     </div>
-                  ))}
+                    {tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {tags.map((tag, index) => (
+                          <div key={index} className="bg-gray-700 text-gray-300 px-2 py-1 rounded-md flex items-center">
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => setTags(tags.filter((_, i) => i !== index))}
+                              className="ml-2 text-gray-400 hover:text-gray-200"
+                            >
+                              &times;
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-400 mt-1">
+                      Tags will be automatically generated if not provided
+                    </p>
+                  </div>
+                  
+                  <div className="flex flex-col flex-1 p-0.5">
+                    <label htmlFor="content" className="block text-sm font-medium text-gray-400 mb-1">
+                      Content (Markdown)
+                    </label>
+                    <textarea
+                      id="content"
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      onKeyDown={(e) => {
+                        // Handle Ctrl+] to add indentation (tab)
+                        if (e.ctrlKey && e.key === ']') {
+                          e.preventDefault();
+                          const textarea = e.target as HTMLTextAreaElement;
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          
+                          // If there's selected text, add tab to the beginning of each line in selection
+                          if (start !== end) {
+                            const selectedText = content.substring(start, end);
+                            const lines = selectedText.split('\n');
+                            const newText = lines.map(line => '  ' + line).join('\n');
+                            const newContent = 
+                              content.substring(0, start) + 
+                              newText + 
+                              content.substring(end);
+                            
+                            setContent(newContent);
+                            
+                            // Set the selection to the newly indented text
+                            setTimeout(() => {
+                              textarea.selectionStart = start;
+                              textarea.selectionEnd = start + newText.length;
+                            }, 0);
+                          } else {
+                            // If no selection, find the current line and add indentation at its beginning
+                            const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+                            const lineEnd = content.indexOf('\n', start);
+                            const currentLine = content.substring(
+                              lineStart, 
+                              lineEnd === -1 ? content.length : lineEnd
+                            );
+                            
+                            // Calculate cursor's position relative to the line start
+                            const cursorOffsetInLine = start - lineStart;
+                            
+                            // Create new content with indentation at the beginning of the line
+                            const newContent = 
+                              content.substring(0, lineStart) + 
+                              '  ' + currentLine + 
+                              content.substring(lineEnd === -1 ? content.length : lineEnd);
+                            
+                            setContent(newContent);
+                            
+                            // Move cursor to the same relative position in the indented line
+                            setTimeout(() => {
+                              const newCursorPos = lineStart + 2 + cursorOffsetInLine;
+                              textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+                            }, 0);
+                          }
+                        }
+                        
+                        // Handle Ctrl+[ to remove indentation
+                        if (e.ctrlKey && e.key === '[') {
+                          e.preventDefault();
+                          const textarea = e.target as HTMLTextAreaElement;
+                          const start = textarea.selectionStart;
+                          const end = textarea.selectionEnd;
+                          
+                          // If there's selected text, remove one level of indentation from each line
+                          if (start !== end) {
+                            const selectedText = content.substring(start, end);
+                            const lines = selectedText.split('\n');
+                            const newText = lines.map(line => {
+                              if (line.startsWith('  ')) return line.substring(2);
+                              if (line.startsWith(' ')) return line.substring(1);
+                              return line;
+                            }).join('\n');
+                            
+                            const newContent = 
+                              content.substring(0, start) + 
+                              newText + 
+                              content.substring(end);
+                            
+                            setContent(newContent);
+                            
+                            // Update selection to match the new text boundaries
+                            setTimeout(() => {
+                              textarea.selectionStart = start;
+                              textarea.selectionEnd = start + newText.length;
+                            }, 0);
+                          } else {
+                            // If no selection, check if we can unindent the current line
+                            const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+                            const lineEnd = content.indexOf('\n', start);
+                            const currentLine = content.substring(
+                              lineStart, 
+                              lineEnd === -1 ? content.length : lineEnd
+                            );
+                            
+                            if (currentLine.startsWith('  ')) {
+                              // Remove two spaces
+                              const newContent = 
+                                content.substring(0, lineStart) + 
+                                currentLine.substring(2) + 
+                                content.substring(lineEnd === -1 ? content.length : lineEnd);
+                              
+                              setContent(newContent);
+                              
+                              // Adjust cursor position
+                              setTimeout(() => {
+                                const newPos = Math.max(start - 2, lineStart);
+                                textarea.selectionStart = textarea.selectionEnd = newPos;
+                              }, 0);
+                            } else if (currentLine.startsWith(' ')) {
+                              // Remove one space
+                              const newContent = 
+                                content.substring(0, lineStart) + 
+                                currentLine.substring(1) + 
+                                content.substring(lineEnd === -1 ? content.length : lineEnd);
+                              
+                              setContent(newContent);
+                              
+                              // Adjust cursor position
+                              setTimeout(() => {
+                                const newPos = Math.max(start - 1, lineStart);
+                                textarea.selectionStart = textarea.selectionEnd = newPos;
+                              }, 0);
+                            }
+                          }
+                        }
+                      }}
+                      className="input-field text-white bg-gray-700 w-full h-full flex-1 resize-y min-h-[400px] focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                      placeholder="Write your post content in Markdown format... (Use Ctrl+] to indent, Ctrl+[ to unindent)"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      id="published"
+                      type="checkbox"
+                      checked={published}
+                      onChange={(e) => setPublished(e.target.checked)}
+                      className="h-4 w-4 text-primary-500 focus:ring-primary-400 border-gray-600 rounded"
+                    />
+                    <label htmlFor="published" className="ml-2 block text-sm text-gray-300">
+                      Published (visible to readers)
+                    </label>
+                  </div>
                 </div>
-              )}
-              <p className="text-xs text-gray-400 mt-1">
-                Tags will be automatically generated if not provided
-              </p>
+                
+                <div className="flex justify-end space-x-3 mt-4 pt-4 border-t border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(false)}
+                    className="btn-secondary px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn-primary relative"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="opacity-0">{editingPost ? 'Update Post' : 'Create Post'}</span>
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        </span>
+                      </>
+                    ) : (
+                      editingPost ? 'Update Post' : 'Create Post'
+                    )}
+                  </button>
+                </div>
+              </form>
             </div>
             
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <label htmlFor="content" className="block text-sm font-medium text-gray-400">
-                  Content (Markdown)
-                </label>
-                <button
-                  type="button"
-                  onClick={togglePreview}
-                  className="text-sm text-primary-400 hover:text-primary-300"
-                >
-                  {showPreview ? 'Edit Content' : 'Preview Content'}
-                </button>
-              </div>
-              
-              {showPreview ? (
-                <div className="bg-gray-700 rounded-xl p-6 min-h-64 overflow-auto">
-                  <article className="max-w-none">
+            {/* Right Column - Preview (narrower) */}
+            <div className="lg:w-2/5 flex flex-col">
+              <div className="sticky top-2 flex flex-col bg-gray-900 rounded-xl border border-gray-700 h-[calc(100vh-16.8rem)]">
+                <h3 className="text-lg font-semibold text-white p-4 border-b border-gray-700">Post Preview</h3>
+                <div className="overflow-auto p-6 flex-1">
+                  <article className="min-w-full">
                     <PostPreviewHeader 
                       title={title || 'Untitled Post'} 
                       date={editingPost?.created_at || new Date().toISOString()} 
@@ -547,185 +707,9 @@ const Posts: React.FC = () => {
                     />
                   </article>
                 </div>
-              ) : (
-                <textarea
-                  id="content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  onKeyDown={(e) => {
-                    // Handle Ctrl+] to add indentation (tab)
-                    if (e.ctrlKey && e.key === ']') {
-                      e.preventDefault();
-                      const textarea = e.target as HTMLTextAreaElement;
-                      const start = textarea.selectionStart;
-                      const end = textarea.selectionEnd;
-                      
-                      // If there's selected text, add tab to the beginning of each line in selection
-                      if (start !== end) {
-                        const selectedText = content.substring(start, end);
-                        const lines = selectedText.split('\n');
-                        const newText = lines.map(line => '  ' + line).join('\n');
-                        const newContent = 
-                          content.substring(0, start) + 
-                          newText + 
-                          content.substring(end);
-                        
-                        setContent(newContent);
-                        
-                        // Set the selection to the newly indented text
-                        setTimeout(() => {
-                          textarea.selectionStart = start;
-                          textarea.selectionEnd = start + newText.length;
-                        }, 0);
-                      } else {
-                        // If no selection, find the current line and add indentation at its beginning
-                        const lineStart = content.lastIndexOf('\n', start - 1) + 1;
-                        const lineEnd = content.indexOf('\n', start);
-                        const currentLine = content.substring(
-                          lineStart, 
-                          lineEnd === -1 ? content.length : lineEnd
-                        );
-                        
-                        // Calculate cursor's position relative to the line start
-                        const cursorOffsetInLine = start - lineStart;
-                        
-                        // Create new content with indentation at the beginning of the line
-                        const newContent = 
-                          content.substring(0, lineStart) + 
-                          '  ' + currentLine + 
-                          content.substring(lineEnd === -1 ? content.length : lineEnd);
-                        
-                        setContent(newContent);
-                        
-                        // Move cursor to the same relative position in the indented line
-                        setTimeout(() => {
-                          const newCursorPos = lineStart + 2 + cursorOffsetInLine;
-                          textarea.selectionStart = textarea.selectionEnd = newCursorPos;
-                        }, 0);
-                      }
-                    }
-                    
-                    // Handle Ctrl+[ to remove indentation
-                    if (e.ctrlKey && e.key === '[') {
-                      e.preventDefault();
-                      const textarea = e.target as HTMLTextAreaElement;
-                      const start = textarea.selectionStart;
-                      const end = textarea.selectionEnd;
-                      
-                      // If there's selected text, remove one level of indentation from each line
-                      if (start !== end) {
-                        const selectedText = content.substring(start, end);
-                        const lines = selectedText.split('\n');
-                        const newText = lines.map(line => {
-                          if (line.startsWith('  ')) return line.substring(2);
-                          if (line.startsWith(' ')) return line.substring(1);
-                          return line;
-                        }).join('\n');
-                        
-                        const newContent = 
-                          content.substring(0, start) + 
-                          newText + 
-                          content.substring(end);
-                        
-                        setContent(newContent);
-                        
-                        // Update selection to match the new text boundaries
-                        setTimeout(() => {
-                          textarea.selectionStart = start;
-                          textarea.selectionEnd = start + newText.length;
-                        }, 0);
-                      } else {
-                        // If no selection, check if we can unindent the current line
-                        const lineStart = content.lastIndexOf('\n', start - 1) + 1;
-                        const lineEnd = content.indexOf('\n', start);
-                        const currentLine = content.substring(
-                          lineStart, 
-                          lineEnd === -1 ? content.length : lineEnd
-                        );
-                        
-                        if (currentLine.startsWith('  ')) {
-                          // Remove two spaces
-                          const newContent = 
-                            content.substring(0, lineStart) + 
-                            currentLine.substring(2) + 
-                            content.substring(lineEnd === -1 ? content.length : lineEnd);
-                          
-                          setContent(newContent);
-                          
-                          // Adjust cursor position
-                          setTimeout(() => {
-                            const newPos = Math.max(start - 2, lineStart);
-                            textarea.selectionStart = textarea.selectionEnd = newPos;
-                          }, 0);
-                        } else if (currentLine.startsWith(' ')) {
-                          // Remove one space
-                          const newContent = 
-                            content.substring(0, lineStart) + 
-                            currentLine.substring(1) + 
-                            content.substring(lineEnd === -1 ? content.length : lineEnd);
-                          
-                          setContent(newContent);
-                          
-                          // Adjust cursor position
-                          setTimeout(() => {
-                            const newPos = Math.max(start - 1, lineStart);
-                            textarea.selectionStart = textarea.selectionEnd = newPos;
-                          }, 0);
-                        }
-                      }
-                    }
-                  }}
-                  className="input-field text-white bg-gray-700 w-full min-h-64"
-                  placeholder="Write your post content in Markdown format... (Use Ctrl+] to indent, Ctrl+[ to unindent)"
-                  required
-                  rows={10}
-                />
-              )}
+              </div>
             </div>
-
-            <div className="flex items-center">
-              <input
-                id="published"
-                type="checkbox"
-                checked={published}
-                onChange={(e) => setPublished(e.target.checked)}
-                className="h-4 w-4 text-primary-500 focus:ring-primary-400 border-gray-600 rounded"
-              />
-              <label htmlFor="published" className="ml-2 block text-sm text-gray-300">
-                Published (visible to readers)
-              </label>
-            </div>
-            
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                className="btn-secondary px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn-primary relative"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="opacity-0">{editingPost ? 'Update Post' : 'Create Post'}</span>
-                    <span className="absolute inset-0 flex items-center justify-center">
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                    </span>
-                  </>
-                ) : (
-                  editingPost ? 'Update Post' : 'Create Post'
-                )}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
       )}
 

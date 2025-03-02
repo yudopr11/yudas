@@ -7,7 +7,6 @@ import Dashboard from './components/admin/Dashboard';
 import Posts from './components/admin/Posts';
 import Users from './components/admin/Users';
 import LogoutHandler from './components/admin/LogoutHandler';
-import { isAuthenticated } from './services/auth';
 
 export default function App() {
   return (

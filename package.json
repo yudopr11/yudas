@@ -25,7 +25,7 @@
   "scripts": {
     "preinstall": "rm -rf node_modules",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && ROLLUP_SKIP_LOAD_CONFIG_FILE=true vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview --host 0.0.0.0 --port ${PORT:-3000}"
   },
@@ -60,6 +60,7 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "postcss": "^8.4.35",
+    "rollup": "^3.29.4",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.1.4"
@@ -68,6 +69,7 @@
     "node": ">=18.0.0"
   },
   "overrides": {
-    "esbuild": "^0.25.0"
+    "esbuild": "^0.25.0",
+    "rollup": "^3.29.4"
   }
 }

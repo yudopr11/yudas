@@ -1,4 +1,8 @@
-.react-router
-build
 node_modules
-README.md
+npm-debug.log
+dist
+.git
+.github
+.vscode
+*.md
+!README.md

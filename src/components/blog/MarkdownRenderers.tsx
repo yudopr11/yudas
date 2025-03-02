@@ -198,7 +198,40 @@ export const MarkdownRenderers = {
     <td className="px-4 py-3 text-gray-300 border-r border-gray-800 last:border-r-0">
       {children}
     </td>
-  )
+  ),
+  // Hyperlink renderer with custom styling
+  a({node, href, children, ...props}: any) {
+    const isExternal = href && (href.startsWith('http://') || href.startsWith('https://'));
+    return (
+      <a 
+        href={href}
+        className="text-primary-400 hover:text-primary-300 underline decoration-primary-600 decoration-1 underline-offset-2 hover:decoration-2 transition-all duration-200"
+        target={isExternal ? "_blank" : undefined}
+        rel={isExternal ? "noopener noreferrer" : undefined}
+        {...props}
+      >
+        {children}
+        {isExternal && (
+          <span className="inline-block ml-1 text-xs">
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="inline-block h-3 w-3" 
+              fill="none" 
+              viewBox="0 0 24 24" 
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path 
+                strokeLinecap="round" 
+                strokeLinejoin="round" 
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
+              />
+            </svg>
+          </span>
+        )}
+      </a>
+    );
+  }
 }; 
 
 // Copy button component with copy-to-clipboard functionality

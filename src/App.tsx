@@ -9,14 +9,6 @@ import Users from './components/admin/Users';
 import LogoutHandler from './components/admin/LogoutHandler';
 import { isAuthenticated } from './services/auth';
 
-// Protected route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
-  }
-  return <>{children}</>;
-};
-
 export default function App() {
   return (
     <HelmetProvider>

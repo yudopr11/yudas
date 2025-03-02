@@ -29,9 +29,13 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-            'markdown-vendor': ['react-markdown', 'react-syntax-highlighter', 'rehype-raw', 'rehype-katex', 'remark-gfm', 'remark-math'],
-            'utils-vendor': ['axios', 'crypto-js']
+            'react-vendor': ['react', 'react-dom', 'react-router-dom', 'react-helmet-async', 'react-hot-toast'],
+            'markdown-core': ['react-markdown'],
+            'markdown-highlight': ['react-syntax-highlighter'],
+            'markdown-plugins': ['rehype-raw', 'remark-gfm'],
+            'markdown-math': ['rehype-katex', 'remark-math', 'katex'],
+            'utils-vendor': ['axios', 'crypto-js'],
+            'ui-vendor': ['@heroicons/react']
           }
         }
       }

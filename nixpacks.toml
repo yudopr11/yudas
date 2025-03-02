@@ -1,5 +1,0 @@
-[phases.setup]
-nixPkgs = ["nodejs-18_x", "npm-8_x"]
-
-[variables]
-NODE_VERSION = "18.19.1" 

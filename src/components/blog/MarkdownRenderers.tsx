@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
@@ -8,6 +8,90 @@ const createHeadingId = (text: string, level: number): string => {
     ? text.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '')
     : '';
   return `heading-${level}-${cleanedText}`;
+};
+
+// Custom CodeBlock component with enhanced re-render capability
+const CodeBlock = ({ language, code, showLineNumbers = true }: { language: string, code: string, showLineNumbers?: boolean }) => {
+  const [renderKey, setRenderKey] = useState(0);
+  const [hasRendered, setHasRendered] = useState(false);
+
+  // Fungsi untuk memaksa re-render
+  const forceRerender = () => {
+    setRenderKey(prev => prev + 1);
+    setHasRendered(true);
+  };
+
+  useEffect(() => {
+    // Daftar event listener untuk berbagai kondisi yang memungkinkan
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        forceRerender();
+      }
+    };
+
+    const handleFocus = () => {
+      forceRerender();
+    };
+
+    // Set up intersection observer untuk memicu re-render saat elemen terlihat
+    let observer: IntersectionObserver;
+    const currentRef = document.getElementById(`code-${renderKey}`);
+    
+    if (currentRef && window.IntersectionObserver) {
+      observer = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          forceRerender();
+        }
+      }, { threshold: 0.1 });
+      
+      observer.observe(currentRef);
+    }
+
+    // Daftarkan event listener
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+      if (observer && currentRef) {
+        observer.disconnect();
+      }
+    };
+  }, [hasRendered, renderKey]);
+
+  // Monitor resize events termasuk tab restore
+  useEffect(() => {
+    const handleResize = () => {
+      forceRerender();
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return (
+    <div id={`code-${renderKey}`} className="overflow-x-auto w-full">
+      <SyntaxHighlighter
+        key={renderKey}
+        style={vscDarkPlus}
+        language={language}
+        PreTag="div"
+        showLineNumbers={showLineNumbers}
+        customStyle={{
+          margin: 0,
+          borderRadius: 0,
+          padding: '1.5rem',
+          fontSize: '0.9rem',
+          backgroundColor: 'transparent',
+          minWidth: '100%',
+          width: 'fit-content',
+        }}
+      >
+        {code}
+      </SyntaxHighlighter>
+    </div>
+  );
 };
 
 export const MarkdownRenderers = {
@@ -29,22 +113,12 @@ export const MarkdownRenderers = {
             </span>
             <CopyButton code={codeString} />
           </div>
-          <SyntaxHighlighter
-            style={vscDarkPlus}
-            language={match[1]}
-            PreTag="div"
-            showLineNumbers={true}
-            customStyle={{
-              margin: 0,
-              borderRadius: 0,
-              padding: '1.5rem',
-              fontSize: '0.9rem',
-              backgroundColor: 'transparent',
-            }}
-            {...props}
-          >
-            {codeString}
-          </SyntaxHighlighter>
+          <div className="overflow-x-auto">
+            <CodeBlock 
+              language={match[1]} 
+              code={codeString} 
+            />
+          </div>
         </div>
       );
     }

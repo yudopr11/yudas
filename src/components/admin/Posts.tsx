@@ -552,8 +552,131 @@ const Posts: React.FC = () => {
                   id="content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Handle Ctrl+] to add indentation (tab)
+                    if (e.ctrlKey && e.key === ']') {
+                      e.preventDefault();
+                      const textarea = e.target as HTMLTextAreaElement;
+                      const start = textarea.selectionStart;
+                      const end = textarea.selectionEnd;
+                      
+                      // If there's selected text, add tab to the beginning of each line in selection
+                      if (start !== end) {
+                        const selectedText = content.substring(start, end);
+                        const lines = selectedText.split('\n');
+                        const newText = lines.map(line => '  ' + line).join('\n');
+                        const newContent = 
+                          content.substring(0, start) + 
+                          newText + 
+                          content.substring(end);
+                        
+                        setContent(newContent);
+                        
+                        // Set the selection to the newly indented text
+                        setTimeout(() => {
+                          textarea.selectionStart = start;
+                          textarea.selectionEnd = start + newText.length;
+                        }, 0);
+                      } else {
+                        // If no selection, find the current line and add indentation at its beginning
+                        const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+                        const lineEnd = content.indexOf('\n', start);
+                        const currentLine = content.substring(
+                          lineStart, 
+                          lineEnd === -1 ? content.length : lineEnd
+                        );
+                        
+                        // Calculate cursor's position relative to the line start
+                        const cursorOffsetInLine = start - lineStart;
+                        
+                        // Create new content with indentation at the beginning of the line
+                        const newContent = 
+                          content.substring(0, lineStart) + 
+                          '  ' + currentLine + 
+                          content.substring(lineEnd === -1 ? content.length : lineEnd);
+                        
+                        setContent(newContent);
+                        
+                        // Move cursor to the same relative position in the indented line
+                        setTimeout(() => {
+                          const newCursorPos = lineStart + 2 + cursorOffsetInLine;
+                          textarea.selectionStart = textarea.selectionEnd = newCursorPos;
+                        }, 0);
+                      }
+                    }
+                    
+                    // Handle Ctrl+[ to remove indentation
+                    if (e.ctrlKey && e.key === '[') {
+                      e.preventDefault();
+                      const textarea = e.target as HTMLTextAreaElement;
+                      const start = textarea.selectionStart;
+                      const end = textarea.selectionEnd;
+                      
+                      // If there's selected text, remove one level of indentation from each line
+                      if (start !== end) {
+                        const selectedText = content.substring(start, end);
+                        const lines = selectedText.split('\n');
+                        const newText = lines.map(line => {
+                          if (line.startsWith('  ')) return line.substring(2);
+                          if (line.startsWith(' ')) return line.substring(1);
+                          return line;
+                        }).join('\n');
+                        
+                        const newContent = 
+                          content.substring(0, start) + 
+                          newText + 
+                          content.substring(end);
+                        
+                        setContent(newContent);
+                        
+                        // Update selection to match the new text boundaries
+                        setTimeout(() => {
+                          textarea.selectionStart = start;
+                          textarea.selectionEnd = start + newText.length;
+                        }, 0);
+                      } else {
+                        // If no selection, check if we can unindent the current line
+                        const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+                        const lineEnd = content.indexOf('\n', start);
+                        const currentLine = content.substring(
+                          lineStart, 
+                          lineEnd === -1 ? content.length : lineEnd
+                        );
+                        
+                        if (currentLine.startsWith('  ')) {
+                          // Remove two spaces
+                          const newContent = 
+                            content.substring(0, lineStart) + 
+                            currentLine.substring(2) + 
+                            content.substring(lineEnd === -1 ? content.length : lineEnd);
+                          
+                          setContent(newContent);
+                          
+                          // Adjust cursor position
+                          setTimeout(() => {
+                            const newPos = Math.max(start - 2, lineStart);
+                            textarea.selectionStart = textarea.selectionEnd = newPos;
+                          }, 0);
+                        } else if (currentLine.startsWith(' ')) {
+                          // Remove one space
+                          const newContent = 
+                            content.substring(0, lineStart) + 
+                            currentLine.substring(1) + 
+                            content.substring(lineEnd === -1 ? content.length : lineEnd);
+                          
+                          setContent(newContent);
+                          
+                          // Adjust cursor position
+                          setTimeout(() => {
+                            const newPos = Math.max(start - 1, lineStart);
+                            textarea.selectionStart = textarea.selectionEnd = newPos;
+                          }, 0);
+                        }
+                      }
+                    }
+                  }}
                   className="input-field text-white bg-gray-700 w-full min-h-64"
-                  placeholder="Write your post content in Markdown format..."
+                  placeholder="Write your post content in Markdown format... (Use Ctrl+] to indent, Ctrl+[ to unindent)"
                   required
                   rows={10}
                 />
@@ -577,7 +700,7 @@ const Posts: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="btn-secondary"
+                className="btn-secondary px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isSubmitting}
               >
                 Cancel

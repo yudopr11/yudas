@@ -305,6 +305,51 @@ export const MarkdownRenderers = {
         )}
       </a>
     );
+  },
+  // Custom blockquote renderer with elegant styling
+  blockquote({children}: any) {
+    // Check if this is a nested blockquote by looking at the parent elements
+    const isNested = React.Children.toArray(children).some(
+      child => React.isValidElement(child) && child.props?.children?.some?.(
+        (grandChild: any) => React.isValidElement(grandChild) && grandChild.type === 'blockquote'
+      )
+    );
+
+    if (isNested) {
+      return (
+        <blockquote className="ml-4 mt-4 mb-4 pl-4 border-l-2 border-blue-400/20">
+          <div className="text-gray-300 italic text-sm sm:text-base">
+            {children}
+          </div>
+        </blockquote>
+      );
+    }
+
+    return (
+      <div className="relative my-8 overflow-hidden group">
+        {/* Gradient background with blur effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 backdrop-blur-3xl group-hover:from-blue-500/10 group-hover:to-purple-500/10 transition-colors duration-300"></div>
+        
+        {/* Left border with gradient */}
+        <div className="absolute left-0 top-0 h-full w-1 bg-gradient-to-b from-blue-400 to-purple-400 group-hover:from-blue-300 group-hover:to-purple-300 transition-colors duration-300"></div>
+        
+        {/* Top accent line */}
+        <div className="absolute top-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-blue-400/20 to-transparent"></div>
+        
+        {/* Bottom accent line */}
+        <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-purple-400/20 to-transparent"></div>
+        
+        {/* Quote content */}
+        <blockquote className="relative rounded-r-lg py-6 pl-6 pr-4 sm:pl-8 sm:pr-6">
+          {/* Large quote mark */}
+          <div className="absolute -top-2 left-3 text-4xl sm:text-5xl text-blue-400/20 select-none font-serif transform -translate-y-1/4">"</div>
+          
+          <div className="relative text-gray-300 italic text-sm sm:text-base">
+            {children}
+          </div>
+        </blockquote>
+      </div>
+    );
   }
 }; 
 

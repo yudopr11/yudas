@@ -6,6 +6,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import usePageTitle from '../../hooks/usePageTitle';
 import { MarkdownRenderers } from '../blog/MarkdownRenderers';
 import { 
   getAllPosts, 
@@ -65,6 +66,9 @@ const PostPreviewContent: React.FC<{ content: string; isPublished?: boolean }> =
 };
 
 const Posts: React.FC = () => {
+  // Mengatur judul halaman
+  usePageTitle('Manage Posts');
+  
   const [posts, setPosts] = useState<PostList[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);

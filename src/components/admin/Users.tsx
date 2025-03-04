@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import usePageTitle from '../../hooks/usePageTitle';
 import { getAllUsers, createUser, deleteUser, type User } from '../../services/api';
 
 const Users: React.FC = () => {
+  // Mengatur judul halaman
+  usePageTitle('Manage Users');
+  
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);

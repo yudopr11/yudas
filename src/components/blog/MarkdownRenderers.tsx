@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { codeToHtml } from 'shiki';
 
 // Helper to create heading IDs
 const createHeadingId = (text: string, level: number): string => {
@@ -10,86 +9,148 @@ const createHeadingId = (text: string, level: number): string => {
   return `heading-${level}-${cleanedText}`;
 };
 
-// Custom CodeBlock component with enhanced re-render capability
+// Custom CodeBlock component with Shiki syntax highlighting
 const CodeBlock = ({ language, code, showLineNumbers = true }: { language: string, code: string, showLineNumbers?: boolean }) => {
-  const [renderKey, setRenderKey] = useState(0);
-  const [hasRendered, setHasRendered] = useState(false);
+  const [highlightedCode, setHighlightedCode] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fungsi untuk memaksa re-render
-  const forceRerender = () => {
-    setRenderKey(prev => prev + 1);
-    setHasRendered(true);
+  // Map some common language variations to supported ones
+  const normalizeLanguage = (lang: string): string => {
+    const langMap: Record<string, string> = {
+      // JavaScript variants
+      'js': 'javascript',
+      'ts': 'typescript',
+      'jsx': 'tsx',
+      'nodejs': 'javascript',
+      'node': 'javascript',
+      
+      // Shell variants
+      'shell': 'bash',
+      'sh': 'bash',
+      'zsh': 'bash',
+      'bash': 'bash',
+      'curl': 'bash',
+      
+      // Windows command line variants
+      'powershell': 'powershell',
+      'ps': 'powershell',
+      'ps1': 'powershell',
+      'cmd': 'cmd',
+      'batch': 'batch',
+      'bat': 'batch',
+      
+      // Data formats
+      'yml': 'yaml',
+      'yaml': 'yaml',
+      'json': 'json',
+      'json5': 'json',
+      'jsonc': 'jsonc',
+      'xml': 'xml',
+      'toml': 'toml',
+      
+      // Web technologies
+      'html': 'html',
+      'css': 'css',
+      'scss': 'scss',
+      'sass': 'sass',
+      'less': 'less',
+      'svg': 'svg',
+      
+      // Common programming languages
+      'py': 'python',
+      'python': 'python',
+      'rb': 'ruby',
+      'ruby': 'ruby',
+      'go': 'go',
+      'golang': 'go',
+      'rs': 'rust',
+      'rust': 'rust',
+      'java': 'java',
+      'kotlin': 'kotlin',
+      'kt': 'kotlin',
+      'c': 'c',
+      'cpp': 'cpp',
+      'c++': 'cpp',
+      'cs': 'csharp',
+      'csharp': 'csharp',
+      'php': 'php',
+      'swift': 'swift',
+      
+      // Database
+      'sql': 'sql',
+      'mysql': 'sql',
+      'pgsql': 'sql',
+      'postgres': 'sql',
+      'postgresql': 'sql',
+      
+      // Markup
+      'md': 'markdown',
+      'markdown': 'markdown',
+      'tex': 'latex',
+      'latex': 'latex',
+    };
+    
+    return langMap[lang.toLowerCase()] || lang;
   };
 
   useEffect(() => {
-    // Daftar event listener untuk berbagai kondisi yang memungkinkan
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        forceRerender();
+    const highlightCode = async () => {
+      try {
+        setIsLoading(true);
+        const normalizedLang = normalizeLanguage(language);
+        
+        // Use Shiki's codeToHtml API
+        const html = await codeToHtml(code, {
+          lang: normalizedLang,
+          theme: 'github-dark',
+          // Add line numbers if requested
+          transformers: showLineNumbers ? [{
+            pre(node) {
+              // Add line numbers via CSS counter
+              node.properties.style = 'counter-reset: line; padding: 0.6rem 1.25rem; font-size: 0.8rem;';
+              return node;
+            },
+            line(node, line) {
+              // Add counter-increment to each line
+              node.properties.className = ['line'];
+              node.properties.style = 'counter-increment: line; padding-right: 1rem; display: flex; align-items: center; min-height: 0.9em; margin: 0; letter-spacing: -0.01em;';
+              
+              // Add line number as a pseudo-element via CSS
+              node.properties['data-line'] = String(line);
+              return node;
+            }
+          }] : undefined,
+        });
+        
+        // Replace default background color with transparent
+        const withTransparentBg = html.replace(
+          /style="background-color:[^"]+"/,
+          'style="background-color: transparent"'
+        );
+        
+        setHighlightedCode(withTransparentBg);
+      } catch (error) {
+        console.error('Error highlighting code:', error);
+        // Fallback to plain text if highlighting fails
+        setHighlightedCode(`<pre><code>${code.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`);
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    const handleFocus = () => {
-      forceRerender();
-    };
-
-    // Set up intersection observer untuk memicu re-render saat elemen terlihat
-    let observer: IntersectionObserver;
-    const currentRef = document.getElementById(`code-${renderKey}`);
     
-    if (currentRef && window.IntersectionObserver) {
-      observer = new IntersectionObserver((entries) => {
-        if (entries[0].isIntersecting) {
-          forceRerender();
-        }
-      }, { threshold: 0.1 });
-      
-      observer.observe(currentRef);
-    }
-
-    // Daftarkan event listener
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    window.addEventListener('focus', handleFocus);
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-      window.removeEventListener('focus', handleFocus);
-      if (observer && currentRef) {
-        observer.disconnect();
-      }
-    };
-  }, [hasRendered, renderKey]);
-
-  // Monitor resize events termasuk tab restore
-  useEffect(() => {
-    const handleResize = () => {
-      forceRerender();
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    highlightCode();
+  }, [code, language, showLineNumbers]);
 
   return (
-    <div id={`code-${renderKey}`} className="overflow-x-auto w-full">
-      <SyntaxHighlighter
-        key={renderKey}
-        style={vscDarkPlus}
-        language={language}
-        PreTag="div"
-        showLineNumbers={showLineNumbers}
-        customStyle={{
-          margin: 0,
-          borderRadius: 0,
-          padding: '1.5rem',
-          fontSize: '0.9rem',
-          backgroundColor: 'transparent',
-          minWidth: '100%',
-          width: 'fit-content',
-        }}
-      >
-        {code}
-      </SyntaxHighlighter>
+    <div className="overflow-x-auto w-full relative px-1">
+      {isLoading ? (
+        <div className="bg-gray-900 p-6 text-gray-400 animate-pulse">Loading...</div>
+      ) : (
+        <div 
+          dangerouslySetInnerHTML={{ __html: highlightedCode }}
+          className="text-sm leading-tight relative"
+        />
+      )}
     </div>
   );
 };
@@ -113,7 +174,7 @@ export const MarkdownRenderers = {
             </span>
             <CopyButton code={codeString} />
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto px-2">
             <CodeBlock 
               language={match[1]} 
               code={codeString} 
@@ -232,10 +293,10 @@ export const MarkdownRenderers = {
   },
   // Custom list renderers
   ul: ({children}: any) => (
-    <ul className="list-disc pl-6 my-4 space-y-2 text-gray-300">{children}</ul>
+    <ul className="list-disc pl-6 my-4 space-y-2 text-white">{children}</ul>
   ),
   ol: ({children}: any) => (
-    <ol className="list-decimal pl-6 my-4 space-y-2 text-gray-300">{children}</ol>
+    <ol className="list-decimal pl-6 my-4 space-y-2 text-white">{children}</ol>
   ),
   li: ({children}: any) => (
     <li className="pl-1">{children}</li>

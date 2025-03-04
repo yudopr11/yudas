@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { isAuthenticated } from '../../services/auth';
+import usePageTitle from '../../hooks/usePageTitle';
 
 // Navigation link component with active state
 interface NavLinkProps {
@@ -33,6 +34,9 @@ const NavLink: React.FC<NavLinkProps> = ({ to, icon, label, isActive, onClick })
 );
 
 const AdminLayout: React.FC = () => {
+  // Set default title jika tidak ada halaman aktif
+  usePageTitle('Admin Panel');
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const currentPath = location.pathname;

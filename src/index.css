@@ -35,6 +35,56 @@ body {
   background-position: center center;
 }
 
+/* Code block styles */
+pre.shiki {
+  padding: 1.2rem 1.2rem !important;
+  overflow-x: auto;
+  line-height: 0.9;
+  font-size: 0.8rem;
+}
+
+pre.shiki code {
+  display: block;
+  line-height: 0.9;
+  font-size: 0.8rem;
+}
+
+pre.shiki code .line {
+  min-height: 0.9em;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Code block line numbers */
+.line {
+  position: relative;
+  padding-left: 1rem;
+  display: flex;
+  align-items: center;
+  min-height: 0.9em;
+  line-height: 0.9;
+  letter-spacing: -0.01em;
+}
+
+.line::before {
+  content: counter(line);
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 1.5rem;
+  text-align: right;
+  color: rgba(115, 138, 148, 0.6);
+  font-size: 0.75em;
+  user-select: none;
+  padding-right: 1.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
 @layer base {
   body {
     @apply bg-gray-900 text-gray-100;

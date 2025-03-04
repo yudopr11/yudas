@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import usePageTitle from '../../hooks/usePageTitle';
 
 const Dashboard: React.FC = () => {
+  // Mengatur judul halaman
+  usePageTitle('Dashboard');
+  
   return (
     <div>
       <div className="mb-6">

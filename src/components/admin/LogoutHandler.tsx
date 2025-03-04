@@ -2,11 +2,15 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { logout } from '../../services/auth';
 import toast from 'react-hot-toast';
+import usePageTitle from '../../hooks/usePageTitle';
 
 // Global flag to prevent multiple execution across renders
 let isLogoutProcessed = false;
 
 const LogoutHandler: React.FC = () => {
+  // Mengatur judul halaman
+  usePageTitle('Logout');
+  
   // Use state to track if we've finished logout
   const [isLogoutComplete, setIsLogoutComplete] = useState(false);
   // Use a ref to track if we've already started the logout process

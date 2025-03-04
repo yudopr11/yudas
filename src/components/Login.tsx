@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { login } from '../services/auth';
 import toast from 'react-hot-toast';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import usePageTitle from '../hooks/usePageTitle';
 
 export default function Login() {
+  usePageTitle('Login');
+  
   const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');

@@ -368,17 +368,24 @@ export const MarkdownRenderers = {
     );
   },
   // Custom blockquote renderer with elegant styling
-  blockquote({children}: any) {
+  blockquote({node, className, children, ...props}: React.ComponentPropsWithoutRef<'blockquote'> & {
+    node?: any;
+    className?: string;
+  }) {
     // Check if this is a nested blockquote by looking at the parent elements
     const isNested = React.Children.toArray(children).some(
-      child => React.isValidElement(child) && child.props?.children?.some?.(
-        (grandChild: any) => React.isValidElement(grandChild) && grandChild.type === 'blockquote'
-      )
+      child => {
+        if (!React.isValidElement(child)) return false;
+        const childProps = child.props as {children?: React.ReactNode};
+        return React.Children.toArray(childProps.children).some(
+          grandChild => React.isValidElement(grandChild) && grandChild.type === 'blockquote'
+        );
+      }
     );
 
     if (isNested) {
       return (
-        <blockquote className="ml-4 mt-4 mb-4 pl-4 border-l-2 border-blue-400/20">
+        <blockquote className={`ml-4 mt-4 mb-4 pl-4 border-l-2 border-blue-400/20 ${className || ''}`} {...props}>
           <div className="text-gray-300 italic text-sm sm:text-base">
             {children}
           </div>
@@ -401,7 +408,7 @@ export const MarkdownRenderers = {
         <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-purple-400/20 to-transparent"></div>
         
         {/* Quote content */}
-        <blockquote className="relative rounded-r-lg py-6 pl-6 pr-4 sm:pl-8 sm:pr-6">
+        <blockquote className={`relative rounded-r-lg py-6 pl-6 pr-4 sm:pl-8 sm:pr-6 ${className || ''}`} {...props}>
           {/* Large quote mark */}
           <div className="absolute -top-2 left-3 text-4xl sm:text-5xl text-blue-400/20 select-none font-serif transform -translate-y-1/4">"</div>
           

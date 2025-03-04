@@ -5,7 +5,7 @@ import { useEffect } from 'react';
  * @param title Judul yang akan ditampilkan
  * @param suffix Suffix untuk judul (opsional), default: "Yudas CMS"
  */
-export const usePageTitle = (title: string, suffix: string = "Yudas CMS") => {
+export const usePageTitle = (title: string, suffix: string = "yudas CMS") => {
   useEffect(() => {
     // Mengatur judul halaman dengan format: [Title] | [Suffix]
     const formattedTitle = title ? `${title} | ${suffix}` : suffix;

@@ -94,7 +94,7 @@ const Users: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Users</h1>
-          <p className="text-gray-400">Manage users who can access the CMS</p>
+          <p className="text-gray-400">Manage users who can access the yudopr app</p>
         </div>
         <button
           onClick={handleCreateNew}

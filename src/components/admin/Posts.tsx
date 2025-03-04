@@ -321,7 +321,7 @@ const Posts: React.FC = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Blog Posts</h1>
-          <p className="text-gray-400">Manage your blog content</p>
+          <p className="text-gray-400">Manage yudopr blog content</p>
         </div>
         {!showForm && (
           <button
@@ -410,7 +410,7 @@ const Posts: React.FC = () => {
           
           <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-6">
             {/* Left Column - Form (wider) */}
-            <div className="lg:w-3/5 overflow-y-auto h-[calc(100vh-16.8rem)]">
+            <div className="lg:w-3/5 overflow-y-auto h-[calc(100vh-19rem)]">
               <form onSubmit={handleSubmit} className="flex flex-col h-full">
                 <div className="space-y-6 flex-1">
                   <div className="p-0.5">
@@ -643,7 +643,7 @@ const Posts: React.FC = () => {
                           }
                         }
                       }}
-                      className="input-field text-white bg-gray-700 w-full h-full flex-1 resize-y min-h-[400px] focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
+                      className="input-field text-white bg-gray-700 w-full h-full flex-1 resize-y min-h-[350px] focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent"
                       placeholder="Write your post content in Markdown format... (Use Ctrl+] to indent, Ctrl+[ to unindent)"
                       required
                     />
@@ -697,7 +697,7 @@ const Posts: React.FC = () => {
             
             {/* Right Column - Preview (narrower) */}
             <div className="lg:w-2/5 flex flex-col">
-              <div className="sticky top-2 flex flex-col bg-gray-900 rounded-xl border border-gray-700 h-[calc(100vh-16.8rem)]">
+              <div className="sticky top-2 flex flex-col bg-gray-900 rounded-xl border border-gray-700 h-[calc(100vh-19rem)]">
                 <h3 className="text-lg font-semibold text-white p-4 border-b border-gray-700">Post Preview</h3>
                 <div className="overflow-auto p-6 flex-1">
                   <article className="min-w-full">

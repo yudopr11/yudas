@@ -17,7 +17,6 @@ This document provides detailed information about all available endpoints in the
   - [Get Post by Slug](#get-post-by-slug)
   - [Update Post](#update-post)
   - [Delete Post](#delete-post)
-- [Bill Splitting](#bill-splitting)
 
 ## Authentication
 
@@ -192,7 +191,7 @@ Create a new blog post.
 **URL**: `/blog/admin`  
 **Method**: `POST`  
 **Auth required**: Yes (Any authenticated user)  
-**Status Code**: `201 Created`
+**Status Code**: `200 OK`
 
 **Request Body**:
 ```json
@@ -210,9 +209,9 @@ Create a new blog post.
 - If `tags` are not provided, they will be automatically generated using AI based on the content and existing tags in the system
 - Post reading time is automatically calculated
 - URL-friendly slug is automatically generated from the title
-- Post embeddings for vector search are generated using only the title (weighted) and excerpt for optimal search performance
+- Post embeddings for vector search are generated using the title, excerpt, and a preview of the content
 
-**Success Response**: `201 Created`
+**Success Response**: `200 OK`
 ```json
 {
   "id": 0,
@@ -241,28 +240,46 @@ Create a new blog post.
 
 Get all published blog posts. Supports pagination and filtering.
 
+**URL**: `/blog`  
+**Method**: `GET`  
+**Auth required**: No  
+
 **Query Parameters:**
 
 | Parameter | Type | Description |
 | --------- | ---- | ----------- |
-| `page` | integer | Page number (default: 1) |
-| `limit` | integer | Number of posts per page (default: 10, max: 100) |
+| `skip` | integer | Number of posts to skip (default: 0) |
+| `limit` | integer | Number of posts per page (default: 3) |
 | `search` | string | Search query to filter posts by title or content |
-| `use_rag` | boolean | When true and search is provided, uses vector search with OpenAI embeddings instead of keyword search |
-| `tags` | array | Filter posts by tags |
-| `published` | boolean | Filter by publication status (requires authentication) |
+| `tag` | string | Filter posts by tag (case-insensitive) |
+| `published_status` | string | Filter by publication status: 'published' (default), 'unpublished', or 'all' |
+| `use_rag` | boolean | When true and search is provided, uses vector search with OpenAI embeddings (default: false) |
 
-**Note:**
-- When `search` is provided and `use_rag=true`, the API uses OpenAI embeddings for semantic search, which ranks results by relevance rather than keyword matching
-- Embeddings are generated using only the title (weighted) and excerpt for focused semantic matching
-- Semantic search is optimized with tiktoken tokenization for better results with short queries
-- Vector search performs query expansion for very short queries to improve relevance
-- The `published` filter is only available to authenticated users. For non-authenticated users, only published posts are returned.
-
-**Success Response:**
-
-```
-Status: 200 OK
+**Success Response**: `200 OK`
+```json
+{
+  "items": [
+    {
+      "id": 0,
+      "title": "string",
+      "excerpt": "string",
+      "reading_time": 0,
+      "tags": ["string"],
+      "author": {
+        "id": 0,
+        "username": "string",
+        "email": "string"
+      },
+      "created_at": "2023-01-01T00:00:00.000Z",
+      "slug": "string",
+      "published": true
+    }
+  ],
+  "total_count": 0,
+  "has_more": false,
+  "limit": 3,
+  "skip": 0
+}
 ```
 
 **Error Responses**:
@@ -296,7 +313,8 @@ Get a specific blog post by its slug.
   "updated_at": "2023-01-01T00:00:00.000Z",
   "author": {
     "id": 0,
-    "username": "string"
+    "username": "string",
+    "email": "string"
   }
 }
 ```
@@ -332,7 +350,7 @@ Update a blog post by ID (author or superuser only).
 - If `tags` are not provided or empty, they will be automatically generated using AI based on the content and existing tags in the system
 - Slug is automatically updated if title changes
 - Reading time is recalculated if content changes
-- Post embeddings are regenerated if title or excerpt changes, using only these fields for focused semantic search
+- Post embeddings are regenerated if title or excerpt changes
 
 **Success Response**: `200 OK`
 ```json
@@ -350,7 +368,8 @@ Update a blog post by ID (author or superuser only).
   "updated_at": "2023-01-01T00:00:00.000Z",
   "author": {
     "id": 0,
-    "username": "string"
+    "username": "string",
+    "email": "string"
   }
 }
 ```
@@ -389,74 +408,3 @@ Delete a blog post by ID (superuser only).
 - `401 Unauthorized` - Not authenticated
 - `403 Forbidden` - Not enough permissions
 - `404 Not Found` - Post not found
-
-## Bill Splitting
-
-### Analyze Bill
-
-Analyze a bill image to extract items, prices, and suggest a fair split.
-
-**URL**: `/splitbill/analyze`  
-**Method**: `POST`  
-**Auth required**: Yes (Any authenticated user)  
-**Content-Type**: `multipart/form-data`  
-**Status Code**: `200 OK`
-
-**Form Parameters**:
-- `image`: File - The bill image to analyze (JPEG, PNG, WebP, max 5MB)
-- `description`: String - A description of the bill or context
-- `image_description`: String (optional) - Additional context about the image
-
-**Notes**:
-- The image will be analyzed using AI to extract items, prices, and other relevant information
-- The system will suggest a fair split based on the extracted information
-- Supported image types: JPEG, PNG, WebP
-- Maximum file size: 5MB
-
-**Success Response**: `200 OK`
-```json
-{
-  "items": [
-    {
-      "name": "string",
-      "price": 0.0,
-      "quantity": 0
-    }
-  ],
-  "subtotal": 0.0,
-  "tax": 0.0,
-  "tip": 0.0,
-  "total": 0.0,
-  "currency": "string",
-  "date": "2023-01-01",
-  "restaurant": "string",
-  "split_suggestions": [
-    {
-      "strategy": "string",
-      "description": "string",
-      "splits": [
-        {
-          "person": "string",
-          "amount": 0.0,
-          "items": [
-            {
-              "name": "string",
-              "price": 0.0,
-              "quantity": 0
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "raw_text": "string"
-}
-```
-
-**Error Responses**:
-- `400 Bad Request` - Invalid bill image
-- `401 Unauthorized` - Not authenticated
-- `413 Request Entity Too Large` - File too large
-- `415 Unsupported Media Type` - Unsupported file type
-- `422 Unprocessable Entity` - Validation error
-- `500 Internal Server Error` - Error analyzing bill 

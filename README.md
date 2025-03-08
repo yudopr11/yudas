@@ -2,8 +2,7 @@
 
 A modern, responsive content management system built with React, TypeScript and Tailwind CSS.
 
-<!-- Note: Add a screenshot of your site here -->
-<!-- ![Yudas CMS Screenshot](public/screenshot.png) -->
+![Yudas CMS Screenshot](Screenshot_8-3-2025_211036.jpeg)
 
 ## Features
 
@@ -55,6 +54,24 @@ npm run dev
 
 4. Open your browser and visit `http://localhost:3000`
 
+## Security Considerations
+
+1. **Environment Variables**
+   - Never commit `.env` file to version control
+   - Use different encryption keys for development and production
+   - Keep your production encryption key secure
+
+2. **Token Storage**
+   - JWT tokens are encrypted using AES before storage in localStorage
+   - Tokens are automatically decrypted when making API requests
+   - Failed encryption/decryption is logged with fallback behavior
+   - Error handling provides security-related feedback without exposing sensitive details
+
+3. **Authentication**
+   - Axios interceptors automatically handle authentication and refresh tokens
+   - Toast notifications for authentication errors with appropriate error messages
+   - Automatic redirection for expired sessions
+   
 ## Project Structure
 
 ```

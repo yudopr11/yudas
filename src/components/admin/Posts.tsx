@@ -6,6 +6,7 @@ import rehypeRaw from 'rehype-raw';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
+import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import usePageTitle from '../../hooks/usePageTitle';
 import { MarkdownRenderers } from '../blog/MarkdownRenderers';
 import { 
@@ -93,6 +94,11 @@ const Posts: React.FC = () => {
   const [published, setPublished] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
+  
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -182,14 +188,20 @@ const Posts: React.FC = () => {
   };
 
   const handleDelete = async (postId: string) => {
-    if (!window.confirm('Are you sure you want to delete this post?')) return;
+    setPostToDelete(postId);
+    setShowDeleteModal(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!postToDelete) return;
     
     try {
-      await deletePost(postId);
+      setDeleteLoading(true);
+      await deletePost(postToDelete);
       toast.success('Post deleted successfully');
       
       // Remove the deleted post from the current posts list
-      setPosts(posts.filter(post => post.id !== postId));
+      setPosts(posts.filter(post => post.id !== postToDelete));
       
       // If we deleted the last post on this page, go back one page
       if (posts.length === 1 && currentPage > 1) {
@@ -200,7 +212,16 @@ const Posts: React.FC = () => {
     } catch (error) {
       toast.error('Failed to delete post');
       console.error('Error deleting post:', error);
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+      setPostToDelete(null);
     }
+  };
+  
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setPostToDelete(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -681,10 +702,7 @@ const Posts: React.FC = () => {
                       <>
                         <span className="opacity-0">{editingPost ? 'Update Post' : 'Create Post'}</span>
                         <span className="absolute inset-0 flex items-center justify-center">
-                          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
+                          <ArrowPathIcon className="animate-spin h-5 w-5 text-white" />
                         </span>
                       </>
                     ) : (
@@ -849,6 +867,50 @@ const Posts: React.FC = () => {
             </>
           )}
         </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-md mx-4 overflow-hidden border border-gray-700">
+            <div className="p-6">
+              <div className="flex items-center mb-4">
+                <div className="bg-red-900/30 p-2 rounded-full mr-3">
+                  <ExclamationTriangleIcon className="h-6 w-6 text-red-500" />
+                </div>
+                <h3 className="text-xl font-semibold text-white">Confirm Deletion</h3>
+              </div>
+              <p className="text-gray-300 mb-6">
+                Are you sure you want to delete this post? This action cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={cancelDelete}
+                  className="px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-colors"
+                  disabled={deleteLoading}
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white transition-colors relative"
+                  disabled={deleteLoading}
+                >
+                  {deleteLoading ? (
+                    <>
+                      <span className="opacity-0">Delete</span>
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <ArrowPathIcon className="animate-spin h-5 w-5 text-white" />
+                      </span>
+                    </>
+                  ) : (
+                    'Delete'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

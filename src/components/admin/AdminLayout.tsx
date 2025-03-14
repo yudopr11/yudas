@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
+import { ChevronRightIcon, Bars3Icon } from '@heroicons/react/20/solid';
 import { isAuthenticated } from '../../services/auth';
 import usePageTitle from '../../hooks/usePageTitle';
 
@@ -25,9 +26,7 @@ const NavLink: React.FC<NavLinkProps> = ({ to, icon, label, isActive, onClick })
     <span className="transition-all duration-300">{label}</span>
     {isActive && (
       <span className="ml-auto">
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-        </svg>
+        <ChevronRightIcon className="h-5 w-5" />
       </span>
     )}
   </Link>
@@ -137,9 +136,7 @@ const AdminLayout: React.FC = () => {
               className="lg:hidden text-gray-300 hover:text-white"
               onClick={() => setSidebarOpen(!sidebarOpen)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <Bars3Icon className="h-6 w-6" />
             </button>
 
             {/* Current section title - shows which page we're on */}

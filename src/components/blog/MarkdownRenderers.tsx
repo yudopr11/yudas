@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { codeToHtml } from 'shiki';
+import { ArrowTopRightOnSquareIcon, DocumentDuplicateIcon, CheckIcon as HeroCheckIcon } from '@heroicons/react/24/outline';
 
 // Helper to create heading IDs
 const createHeadingId = (text: string, level: number): string => {
@@ -348,20 +349,7 @@ export const MarkdownRenderers = {
         {children}
         {isExternal && (
           <span className="inline-block ml-1 text-xs">
-            <svg 
-              xmlns="http://www.w3.org/2000/svg" 
-              className="inline-block h-3 w-3" 
-              fill="none" 
-              viewBox="0 0 24 24" 
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path 
-                strokeLinecap="round" 
-                strokeLinejoin="round" 
-                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" 
-              />
-            </svg>
+            <ArrowTopRightOnSquareIcon className="inline-block h-3 w-3" />
           </span>
         )}
       </a>
@@ -469,39 +457,13 @@ function CopyButton({ code }: { code: string }) {
 // Copy icon component
 function CopyIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      className={className} 
-      fill="none" 
-      viewBox="0 0 24 24" 
-      stroke="currentColor"
-    >
-      <path 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        strokeWidth={2} 
-        d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" 
-      />
-    </svg>
+    <DocumentDuplicateIcon className={className} />
   );
 }
 
 // Check icon component
 function CheckIcon({ className = "w-5 h-5" }: { className?: string }) {
   return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      className={className} 
-      fill="none" 
-      viewBox="0 0 24 24" 
-      stroke="currentColor"
-    >
-      <path 
-        strokeLinecap="round" 
-        strokeLinejoin="round" 
-        strokeWidth={2} 
-        d="M5 13l4 4L19 7" 
-      />
-    </svg>
+    <HeroCheckIcon className={className} />
   );
 } 

@@ -431,7 +431,7 @@ const Posts: React.FC = () => {
           
           <div className="flex flex-col lg:flex-row space-y-6 lg:space-y-0 lg:space-x-6">
             {/* Left Column - Form (wider) */}
-            <div className="lg:w-3/5 overflow-y-auto h-[calc(100vh-19rem)]">
+            <div className="lg:w-3/5 pr-4 overflow-y-auto h-[calc(100vh-19rem)]">
               <form onSubmit={handleSubmit} className="flex flex-col h-full">
                 <div className="space-y-6 flex-1">
                   <div className="p-0.5">

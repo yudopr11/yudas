@@ -10,7 +10,26 @@ import LogoutHandler from './components/admin/LogoutHandler';
 export default function App() {
   return (
     <Router>
-      <Toaster position="top-right" />
+      <Toaster position="top-right" 
+        toastOptions={{
+          style: {
+            background: '#1e293b',
+            color: '#f8fafc',
+            border: '1px solid #475569'
+          },
+          success: {
+            iconTheme: {
+              primary: '#30BDF2',
+              secondary: '#1e293b',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#ef4444',
+              secondary: '#1e293b',
+            },
+          },
+        }} />
       <Routes>
         {/* Auth Routes */}
         <Route path="/login" element={<Login />} />

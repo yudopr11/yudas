@@ -1,13 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet, Link, useLocation } from 'react-router-dom';
-import { ChevronRightIcon, Bars3Icon } from '@heroicons/react/20/solid';
+import { 
+  ChevronRightIcon, 
+  Bars3Icon,
+  RectangleGroupIcon,
+  DocumentTextIcon,
+  UsersIcon,
+  ArrowRightStartOnRectangleIcon 
+} from '@heroicons/react/24/solid';
 import { isAuthenticated } from '../../services/auth';
 import usePageTitle from '../../hooks/usePageTitle';
 
 // Navigation link component with active state
 interface NavLinkProps {
   to: string;
-  icon: string;
+  icon: React.ReactNode;
   label: string;
   isActive: boolean;
   onClick?: () => void;
@@ -69,9 +76,9 @@ const AdminLayout: React.FC = () => {
 
   // Main navigation items
   const navItems = [
-    { to: '/admin/dashboard', icon: '📊', label: 'Dashboard' },
-    { to: '/admin/posts', icon: '📝', label: 'Posts' },
-    { to: '/admin/users', icon: '👥', label: 'Users' },
+    { to: '/admin/dashboard', icon: <RectangleGroupIcon className="h-6 w-6" />, label: 'Dashboard' },
+    { to: '/admin/posts', icon: <DocumentTextIcon className="h-6 w-6" />, label: 'Posts' },
+    { to: '/admin/users', icon: <UsersIcon className="h-6 w-6" />, label: 'Users' },
   ];
 
   const isPathActive = (path: string) => currentPath === path;
@@ -119,7 +126,7 @@ const AdminLayout: React.FC = () => {
               to="/admin/logout" 
               className="flex items-center py-2 px-4 rounded-lg text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
             >
-              <span className="mr-3">🚪</span>
+              <span className="mr-3"><ArrowRightStartOnRectangleIcon className="h-6 w-6 text-red-400" /></span>
               Log out
             </Link>
           </div>

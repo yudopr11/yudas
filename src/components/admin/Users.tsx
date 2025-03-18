@@ -3,6 +3,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import usePageTitle from '../../hooks/usePageTitle';
 import { getAllUsers, createUser, deleteUser, type User } from '../../services/api';
+import DeleteModal from '../common/DeleteModal';
 
 const Users: React.FC = () => {
   // Mengatur judul halaman
@@ -11,6 +12,11 @@ const Users: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   
   // Form state
   const [username, setUsername] = useState('');
@@ -46,16 +52,33 @@ const Users: React.FC = () => {
   };
 
   const handleDelete = async (userId: number) => {
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
+    setUserToDelete(userId);
+    setShowDeleteModal(true);
+  };
+  
+  const confirmDelete = async () => {
+    if (!userToDelete) return;
     
     try {
-      await deleteUser(userId);
+      setDeleteLoading(true);
+      await deleteUser(userToDelete);
       toast.success('User deleted successfully');
-      setUsers(users.filter(user => user.user_id !== userId));
+      
+      // Remove the deleted user from the current users list
+      setUsers(users.filter(user => user.user_id !== userToDelete));
     } catch (error) {
       toast.error('Failed to delete user');
       console.error('Error deleting user:', error);
+    } finally {
+      setDeleteLoading(false);
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     }
+  };
+  
+  const cancelDelete = () => {
+    setShowDeleteModal(false);
+    setUserToDelete(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,6 +114,17 @@ const Users: React.FC = () => {
 
   return (
     <div className="w-full h-full">
+      {/* Delete Confirmation Modal */}
+      <DeleteModal
+        isOpen={showDeleteModal}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        itemLabel="User"
+        isLoading={deleteLoading}
+        onConfirm={confirmDelete}
+        onCancel={cancelDelete}
+      />
+
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-white">Users</h1>
@@ -263,7 +297,7 @@ const Users: React.FC = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onClick={() => handleDelete(user.user_id)}
-                      className="text-red-500 hover:text-red-400"
+                      className="text-red-400 hover:text-red-300 ml-4"
                     >
                       Delete
                     </button>

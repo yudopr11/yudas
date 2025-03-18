@@ -3,13 +3,13 @@ import axios, { AxiosError } from 'axios';
 
 // Types
 export interface PostAuthor {
-  id: number;
+  user_id: number;
   username: string;
   email?: string;
 }
 
 export interface PostList {
-  id: string;
+  post_id: string;
   uuid: string;
   title: string;
   excerpt: string;
@@ -31,7 +31,7 @@ export interface PostListResponse {
 }
 
 export interface Post {
-  id: string;
+  post_id: string;
   uuid: string;
   title: string;
   slug: string;
@@ -64,7 +64,7 @@ export interface DeletePostResponse {
 }
 
 export interface User {
-  id: number;
+  user_id: number;
   username: string;
   email: string;
   created_at: string;
@@ -226,7 +226,7 @@ export const getPostById = async (postId: string): Promise<Post> => {
     // First, get all posts to find the one with matching ID
     // Include all posts (published and unpublished) in the search
     const postsResponse = await getAllPosts(0, 100, "all");
-    const post = postsResponse.items.find(p => p.id === postId || p.id === numericPostId.toString());
+    const post = postsResponse.items.find(p => p.post_id === postId || p.post_id === numericPostId.toString());
     
     if (!post) {
       throw new Error(`Post with ID ${postId} not found`);
@@ -245,7 +245,7 @@ export const getPostById = async (postId: string): Promise<Post> => {
     // If the slug endpoint fails, construct a Post object
     // from the data we have in the post list
     return {
-      id: post.id,
+      post_id: post.post_id,
       uuid: post.uuid,
       title: post.title,
       content: "", // Content will be empty if slug endpoint fails

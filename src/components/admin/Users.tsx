@@ -51,7 +51,7 @@ const Users: React.FC = () => {
     try {
       await deleteUser(userId);
       toast.success('User deleted successfully');
-      setUsers(users.filter(user => user.id !== userId));
+      setUsers(users.filter(user => user.user_id !== userId));
     } catch (error) {
       toast.error('Failed to delete user');
       console.error('Error deleting user:', error);
@@ -240,7 +240,7 @@ const Users: React.FC = () => {
             </thead>
             <tbody className="bg-gray-900 divide-y divide-gray-800">
               {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-800 transition-colors">
+                <tr key={user.user_id} className="hover:bg-gray-800 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-white">{user.username}</div>
                     <div className="text-xs text-gray-400">{user.uuid}</div>
@@ -262,7 +262,7 @@ const Users: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      onClick={() => handleDelete(user.id)}
+                      onClick={() => handleDelete(user.user_id)}
                       className="text-red-500 hover:text-red-400"
                     >
                       Delete

@@ -45,7 +45,7 @@ Create a new user account (superuser only).
 }
 ```
 
-**Success Response**: `201 Created`
+**Success Response**: `200 OK`
 ```json
 {
   "id": 0,
@@ -181,35 +181,32 @@ Delete a user by ID (superuser only).
 - `401 Unauthorized` - Not authenticated
 - `403 Forbidden` - Not enough permissions
 - `404 Not Found` - User not found
+- `422 Unprocessable Entity` - Validation error
 
 ## Blog Management
+
+Manage blog posts for the platform.
 
 ### Create Post
 
 Create a new blog post.
 
-**URL**: `/blog/admin`  
+**URL**: `/blog`  
 **Method**: `POST`  
-**Auth required**: Yes (Any authenticated user)  
-**Status Code**: `200 OK`
+**Auth required**: Yes (Superuser)  
 
 **Request Body**:
 ```json
 {
   "title": "string",
+  "slug": "string",
+  "excerpt": "string",
   "content": "string",
-  "excerpt": "string (optional)",
-  "tags": ["string"] (optional),
-  "published": true
+  "featured_image": "string",
+  "tags": ["tag1", "tag2"],
+  "is_published": true
 }
 ```
-
-**Notes**:
-- If `excerpt` is not provided, it will be automatically generated using AI
-- If `tags` are not provided, they will be automatically generated using AI based on the content and existing tags in the system
-- Post reading time is automatically calculated
-- URL-friendly slug is automatically generated from the title
-- Post embeddings for vector search are generated using the title, excerpt, and a preview of the content
 
 **Success Response**: `200 OK`
 ```json
@@ -218,42 +215,35 @@ Create a new blog post.
   "uuid": "string",
   "title": "string",
   "slug": "string",
-  "content": "string",
   "excerpt": "string",
-  "tags": ["string"],
-  "reading_time": 0,
-  "published": true,
+  "content": "string",
+  "featured_image": "string",
+  "tags": ["tag1", "tag2"],
+  "is_published": true,
   "created_at": "2023-01-01T00:00:00.000Z",
-  "updated_at": "2023-01-01T00:00:00.000Z",
-  "author": {
-    "id": 0,
-    "username": "string"
-  }
+  "updated_at": "2023-01-01T00:00:00.000Z"
 }
 ```
 
 **Error Responses**:
 - `401 Unauthorized` - Not authenticated
+- `403 Forbidden` - Not enough permissions
 - `422 Unprocessable Entity` - Validation error
 
 ### Get Posts
 
-Get all published blog posts. Supports pagination and filtering.
+Get a list of blog posts with pagination and filtering options.
 
 **URL**: `/blog`  
 **Method**: `GET`  
 **Auth required**: No  
 
-**Query Parameters:**
-
-| Parameter | Type | Description |
-| --------- | ---- | ----------- |
-| `skip` | integer | Number of posts to skip (default: 0) |
-| `limit` | integer | Number of posts per page (default: 3) |
-| `search` | string | Search query to filter posts by title or content |
-| `tag` | string | Filter posts by tag (case-insensitive) |
-| `published_status` | string | Filter by publication status: 'published' (default), 'unpublished', or 'all' |
-| `use_rag` | boolean | When true and search is provided, uses vector search with OpenAI embeddings (default: false) |
+**Query Parameters**:
+- `skip` (integer, default=0) - Number of items to skip
+- `limit` (integer, default=3) - Number of items to return
+- `search` (string, optional) - Search term for title, excerpt, content, and tags
+- `tag` (string, optional) - Filter by tag (case-insensitive)
+- `status` (string, default="published") - Filter by status: 'published', 'unpublished', or 'all'
 
 **Success Response**: `200 OK`
 ```json
@@ -261,29 +251,26 @@ Get all published blog posts. Supports pagination and filtering.
   "items": [
     {
       "id": 0,
+      "uuid": "string",
       "title": "string",
-      "excerpt": "string",
-      "reading_time": 0,
-      "tags": ["string"],
-      "author": {
-        "id": 0,
-        "username": "string",
-        "email": "string"
-      },
-      "created_at": "2023-01-01T00:00:00.000Z",
       "slug": "string",
-      "published": true
+      "excerpt": "string", 
+      "content": "string",
+      "featured_image": "string",
+      "tags": ["tag1", "tag2"],
+      "is_published": true,
+      "created_at": "2023-01-01T00:00:00.000Z",
+      "updated_at": "2023-01-01T00:00:00.000Z"
     }
   ],
-  "total_count": 0,
-  "has_more": false,
-  "limit": 3,
-  "skip": 0
+  "total": 10,
+  "has_more": true
 }
 ```
 
-**Error Responses**:
-- `422 Unprocessable Entity` - Invalid query parameters
+**Notes**:
+- Supports semantic search using OpenAI embeddings when search parameter is provided
+- Default limit is 3 posts per page
 
 ### Get Post by Slug
 
@@ -292,7 +279,6 @@ Get a specific blog post by its slug.
 **URL**: `/blog/{slug}`  
 **Method**: `GET`  
 **Auth required**: No  
-**Status Code**: `200 OK`
 
 **URL Parameters**:
 - `slug` - The slug of the post to retrieve
@@ -304,18 +290,13 @@ Get a specific blog post by its slug.
   "uuid": "string",
   "title": "string",
   "slug": "string",
-  "content": "string",
   "excerpt": "string",
-  "tags": ["string"],
-  "reading_time": 0,
-  "published": true,
+  "content": "string",
+  "featured_image": "string",
+  "tags": ["tag1", "tag2"],
+  "is_published": true,
   "created_at": "2023-01-01T00:00:00.000Z",
-  "updated_at": "2023-01-01T00:00:00.000Z",
-  "author": {
-    "id": 0,
-    "username": "string",
-    "email": "string"
-  }
+  "updated_at": "2023-01-01T00:00:00.000Z"
 }
 ```
 
@@ -324,33 +305,27 @@ Get a specific blog post by its slug.
 
 ### Update Post
 
-Update a blog post by ID (author or superuser only).
+Update an existing blog post.
 
-**URL**: `/blog/admin/{post_id}`  
+**URL**: `/blog/{slug}`  
 **Method**: `PUT`  
-**Auth required**: Yes (Post author or Superuser)  
-**Status Code**: `200 OK`
+**Auth required**: Yes (Superuser)  
 
 **URL Parameters**:
-- `post_id` - The ID of the post to update
+- `slug` - The slug of the post to update
 
 **Request Body**:
 ```json
 {
   "title": "string",
+  "slug": "string",
+  "excerpt": "string",
   "content": "string",
-  "excerpt": "string (optional)",
-  "tags": ["string"] (optional),
-  "published": true
+  "featured_image": "string",
+  "tags": ["tag1", "tag2"],
+  "is_published": true
 }
 ```
-
-**Notes**:
-- If `excerpt` is not provided or empty, it will be automatically regenerated using AI
-- If `tags` are not provided or empty, they will be automatically generated using AI based on the content and existing tags in the system
-- Slug is automatically updated if title changes
-- Reading time is recalculated if content changes
-- Post embeddings are regenerated if title or excerpt changes
 
 **Success Response**: `200 OK`
 ```json
@@ -359,48 +334,13 @@ Update a blog post by ID (author or superuser only).
   "uuid": "string",
   "title": "string",
   "slug": "string",
-  "content": "string",
   "excerpt": "string",
-  "tags": ["string"],
-  "reading_time": 0,
-  "published": true,
+  "content": "string",
+  "featured_image": "string",
+  "tags": ["tag1", "tag2"],
+  "is_published": true,
   "created_at": "2023-01-01T00:00:00.000Z",
-  "updated_at": "2023-01-01T00:00:00.000Z",
-  "author": {
-    "id": 0,
-    "username": "string",
-    "email": "string"
-  }
-}
-```
-
-**Error Responses**:
-- `401 Unauthorized` - Not authenticated
-- `403 Forbidden` - Not enough permissions (not the author)
-- `404 Not Found` - Post not found
-- `422 Unprocessable Entity` - Validation error
-
-### Delete Post
-
-Delete a blog post by ID (superuser only).
-
-**URL**: `/blog/admin/{post_id}`  
-**Method**: `DELETE`  
-**Auth required**: Yes (Superuser)  
-**Status Code**: `200 OK`
-
-**URL Parameters**:
-- `post_id` - The ID of the post to delete
-
-**Success Response**: `200 OK`
-```json
-{
-  "message": "Post has been deleted successfully",
-  "deleted_item": {
-    "id": 0,
-    "title": "string",
-    "uuid": "string"
-  }
+  "updated_at": "2023-01-01T00:00:00.000Z"
 }
 ```
 
@@ -408,3 +348,43 @@ Delete a blog post by ID (superuser only).
 - `401 Unauthorized` - Not authenticated
 - `403 Forbidden` - Not enough permissions
 - `404 Not Found` - Post not found
+- `422 Unprocessable Entity` - Validation error
+
+### Delete Post
+
+Delete a blog post.
+
+**URL**: `/blog/{slug}`  
+**Method**: `DELETE`  
+**Auth required**: Yes (Superuser)  
+
+**URL Parameters**:
+- `slug` - The slug of the post to delete
+
+**Success Response**: `200 OK`
+```json
+{
+  "message": "Post deleted successfully"
+}
+```
+
+**Error Responses**:
+- `401 Unauthorized` - Not authenticated
+- `403 Forbidden` - Not enough permissions
+- `404 Not Found` - Post not found
+
+## Security
+
+The API uses OAuth2 with password flow for authentication. Security is implemented using:
+
+```
+OAuth2PasswordBearer: {
+  "type": "oauth2",
+  "flows": {
+    "password": {
+      "scopes": {},
+      "tokenUrl": "auth/login"
+    }
+  }
+}
+```

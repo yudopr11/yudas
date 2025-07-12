@@ -15,10 +15,9 @@ import {
   createPost, 
   updatePost, 
   deletePost, 
-  getPostById,
   type Post, 
   type PostList,
-  type PostCreate} from '../../services/api';
+  type PostCreate, getPostBySlugForEdit} from '../../services/api';
 
 // Preview components berdasarkan referensi PostDetail
 const PostPreviewHeader: React.FC<{ title: string; date: string }> = ({ title, date }) => (
@@ -161,7 +160,7 @@ const Posts: React.FC = () => {
     try {
       setLoading(true);
       // Get full post data including content
-      const fullPost = await getPostById(post.post_id);
+      const fullPost = await getPostBySlugForEdit(post.slug);
       
       setEditingPost(fullPost);
       setTitle(fullPost.title);
@@ -202,7 +201,7 @@ const Posts: React.FC = () => {
       toast.success('Post deleted successfully');
       
       // Remove the deleted post from the current posts list
-      setPosts(posts.filter(post => post.post_id !== postToDelete));
+      setPosts(posts.filter(post => post.id !== postToDelete));
       
       // If we deleted the last post on this page, go back one page
       if (posts.length === 1 && currentPage > 1) {
@@ -244,7 +243,7 @@ const Posts: React.FC = () => {
       };
       
       if (editingPost) {
-        await updatePost(editingPost.post_id, postData);
+        await updatePost(editingPost.id, postData);
         toast.success('Post updated successfully');
       } else {
         await createPost(postData);
@@ -314,7 +313,7 @@ const Posts: React.FC = () => {
       setLoading(true);
       
       // Get full post data first
-      const fullPost = await getPostById(post.post_id);
+      const fullPost = await getPostBySlugForEdit(post.slug);
       
       // Toggle the published status
       const updatedData: PostCreate = {
@@ -326,7 +325,7 @@ const Posts: React.FC = () => {
         tags: fullPost.tags
       };
       
-      await updatePost(post.post_id, updatedData);
+      await updatePost(post.id, updatedData);
       
       toast.success(`Post ${updatedData.published ? 'published' : 'unpublished'} successfully`);
       fetchPosts(); // Refresh the list
@@ -773,7 +772,7 @@ const Posts: React.FC = () => {
                   </thead>
                   <tbody className="bg-gray-900 divide-y divide-gray-800">
                     {posts.map((post) => (
-                      <tr key={post.post_id} className="hover:bg-gray-800 transition-colors">
+                      <tr key={post.id} className="hover:bg-gray-800 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-white">{post.title}</div>
                           <div className="text-xs text-gray-400 mt-1">{post.slug}</div>
@@ -806,7 +805,7 @@ const Posts: React.FC = () => {
                             Edit
                           </button>
                           <button
-                            onClick={() => handleDelete(post.post_id)}
+                            onClick={() => handleDelete(post.id)}
                             className="text-red-500 hover:text-red-400"
                           >
                             Delete

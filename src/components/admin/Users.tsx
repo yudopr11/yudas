@@ -15,7 +15,7 @@ const Users: React.FC = () => {
   
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   
   // Form state
@@ -51,7 +51,7 @@ const Users: React.FC = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (userId: number) => {
+  const handleDelete = async (userId: string) => {
     setUserToDelete(userId);
     setShowDeleteModal(true);
   };
@@ -65,7 +65,7 @@ const Users: React.FC = () => {
       toast.success('User deleted successfully');
       
       // Remove the deleted user from the current users list
-      setUsers(users.filter(user => user.user_id !== userToDelete));
+      setUsers(users.filter(user => user.id !== userToDelete));
     } catch (error) {
       toast.error('Failed to delete user');
       console.error('Error deleting user:', error);
@@ -274,10 +274,10 @@ const Users: React.FC = () => {
             </thead>
             <tbody className="bg-gray-900 divide-y divide-gray-800">
               {users.map((user) => (
-                <tr key={user.user_id} className="hover:bg-gray-800 transition-colors">
+                <tr key={user.id} className="hover:bg-gray-800 transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-medium text-white">{user.username}</div>
-                    <div className="text-xs text-gray-400">{user.uuid}</div>
+                    <div className="text-xs text-gray-400">{user.id}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-400">{user.email}</div>
@@ -296,7 +296,7 @@ const Users: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      onClick={() => handleDelete(user.user_id)}
+                      onClick={() => handleDelete(user.id)}
                       className="text-red-400 hover:text-red-300 ml-4"
                     >
                       Delete

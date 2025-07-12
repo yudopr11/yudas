@@ -351,8 +351,7 @@ export const MarkdownRenderers = {
           <span className="inline-block ml-1 text-xs">
             <ArrowTopRightOnSquareIcon className="inline-block h-3 w-3" />
           </span>
-        )}
-      </a>
+        )}</a>
     );
   },
   // Custom blockquote renderer with elegant styling

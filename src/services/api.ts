@@ -3,14 +3,13 @@ import axios, { AxiosError } from 'axios';
 
 // Types
 export interface PostAuthor {
-  user_id: number;
+  id: string;
   username: string;
   email?: string;
 }
 
 export interface PostList {
-  post_id: string;
-  uuid: string;
+  id: string;
   title: string;
   excerpt: string;
   slug: string;
@@ -31,8 +30,7 @@ export interface PostListResponse {
 }
 
 export interface Post {
-  post_id: string;
-  uuid: string;
+  id: string;
   title: string;
   slug: string;
   content: string;
@@ -57,19 +55,17 @@ export interface PostCreate {
 export interface DeletePostResponse {
   message: string;
   deleted_item: {
-    id: number;
+    id: string;
     title: string;
-    uuid: string;
   };
 }
 
 export interface User {
-  user_id: number;
+  id: string;
   username: string;
   email: string;
   created_at: string;
   is_superuser: boolean;
-  uuid: string;
 }
 
 interface ApiErrorResponse {
@@ -174,13 +170,7 @@ export const getPostBySlug = async (slug: string): Promise<Post> => {
  */
 export const updatePost = async (postId: string, postData: PostCreate): Promise<Post> => {
   try {
-    // Ensure postId is a valid number, as the API expects
-    const numericPostId = parseInt(postId, 10);
-    if (isNaN(numericPostId)) {
-      throw new Error(`Invalid post ID: ${postId}`);
-    }
-    
-    const response = await axiosInstance.put(`/blog/admin/${numericPostId}`, postData);
+    const response = await axiosInstance.put(`/blog/admin/${postId}`, postData);
     return response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -194,13 +184,7 @@ export const updatePost = async (postId: string, postData: PostCreate): Promise<
  */
 export const deletePost = async (postId: string): Promise<DeletePostResponse> => {
   try {
-    // Ensure postId is a valid number, as the API expects
-    const numericPostId = parseInt(postId, 10);
-    if (isNaN(numericPostId)) {
-      throw new Error(`Invalid post ID: ${postId}`);
-    }
-    
-    const response = await axiosInstance.delete(`/blog/admin/${numericPostId}`);
+    const response = await axiosInstance.delete(`/blog/admin/${postId}`);
     return response.data;
   } catch (error) {
     throw handleApiError(error);
@@ -208,56 +192,14 @@ export const deletePost = async (postId: string): Promise<DeletePostResponse> =>
 };
 
 /**
- * Get a post by ID (for editing with complete content)
- * Requires authentication for accessing unpublished posts
- * @param postId ID of the post to retrieve
+ * Get a specific post by slug for editing purposes.
+ * This function is intended for authenticated users to retrieve full post content.
+ * @param slug The URL-friendly identifier of the post.
  */
-export const getPostById = async (postId: string): Promise<Post> => {
+export const getPostBySlugForEdit = async (slug: string): Promise<Post> => {
   try {
-    // Ensure postId is a valid number
-    const numericPostId = parseInt(postId, 10);
-    if (isNaN(numericPostId)) {
-      throw new Error(`Invalid post ID: ${postId}`);
-    }
-    
-    // Since there's no direct GET endpoint for /blog/admin/{post_id},
-    // we need to use an alternative approach to get the post
-    
-    // First, get all posts to find the one with matching ID
-    // Include all posts (published and unpublished) in the search
-    const postsResponse = await getAllPosts(0, 100, "all");
-    const post = postsResponse.items.find(p => p.post_id === postId || p.post_id === numericPostId.toString());
-    
-    if (!post) {
-      throw new Error(`Post with ID ${postId} not found`);
-    }
-    
-    // Try to get the full content through the slug endpoint for ALL posts
-    // regardless of publication status
-    try {
-      const slugResponse = await axiosInstance.get(`/blog/${post.slug}`);
-      return slugResponse.data;
-    } catch (slugError) {
-      console.warn(`Error fetching complete post data by slug: ${slugError}`);
-      // Fall back to constructing post data from the post list
-    }
-    
-    // If the slug endpoint fails, construct a Post object
-    // from the data we have in the post list
-    return {
-      post_id: post.post_id,
-      uuid: post.uuid,
-      title: post.title,
-      content: "", // Content will be empty if slug endpoint fails
-      excerpt: post.excerpt,
-      slug: post.slug,
-      published: post.published,
-      reading_time: post.reading_time,
-      author: post.author,
-      created_at: post.created_at,
-      updated_at: post.created_at || new Date().toISOString(), // Use created_at as fallback
-      tags: post.tags || []
-    };
+    const response = await axiosInstance.get(`/blog/${slug}`);
+    return response.data;
   } catch (error) {
     throw handleApiError(error);
   }
@@ -327,12 +269,11 @@ export const createUser = async (userData: {
 /**
  * Delete a user (admin only)
  */
-export const deleteUser = async (userId: number): Promise<{
+export const deleteUser = async (userId: string): Promise<{
   message: string;
-  deleted_user: {
-    id: number;
+  deleted_item: {
+    id: string;
     username: string;
-    uuid: string;
   };
 }> => {
   try {

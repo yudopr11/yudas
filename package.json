@@ -38,7 +38,7 @@
     "react-dom": "^19.0.0",
     "react-hot-toast": "^2.5.2",
     "react-markdown": "^10.0.0",
-    "react-router-dom": "^7.2.0",
+    "react-router-dom": "^7.13.0",
     "rehype-katex": "^7.0.1",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",

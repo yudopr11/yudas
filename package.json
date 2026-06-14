@@ -51,7 +51,7 @@
     "@types/react-dom": "^19.0.4",
     "@typescript-eslint/eslint-plugin": "^8.26.0",
     "@typescript-eslint/parser": "^8.26.0",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^6.0.2",
     "autoprefixer": "^10.4.17",
     "eslint": "^9.20.1",
     "eslint-plugin-react-hooks": "^5.2.0",
@@ -59,7 +59,7 @@
     "postcss": "^8.5.14",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.2",
-    "vite": "^6.4.2"
+    "vite": "^8.0.16"
   },
   "engines": {
     "node": ">=18.0.0"
